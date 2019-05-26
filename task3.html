@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+        <title>Task 3</title>
+        <style type="text/css">
+            div#game_board{
+                background: #FFF;
+                border:silver 2px solid;
+                width: 40rem;
+                height: 37rem;                
+                margin: 2rem;                
+            }
+            div#game_board > div{
+                float: left;
+                background: #FFF;
+                border: silver 1px solid;
+                width: 7rem;
+                height: 7rem;                
+                margin: 1rem; 
+                cursor: pointer;                
+            }
+            .pad{
+                margin: 1rem 7rem 1rem 7rem;
+            }
+            .timer{
+                display: inline-block;
+                min-width: 15%;
+            }
+        </style>
+        <script>
+            var time = {
+                msec: 0,
+                sec: 0,
+                min: 0
+            }
+            var timeOfGame = '';
+            var charsForColor="0123456789ABCDEF";
+            var counterTime = (timeBegin, obj) => {
+                var timeTemp = new Date();
+                var msecTemp = timeTemp.getMilliseconds();
+                var secTemp = timeTemp.getSeconds();
+                var minTemp = timeTemp.getMinutes();
+                if(msecTemp >= timeBegin.getMilliseconds()){
+                    obj.msec = msecTemp - timeBegin.getMilliseconds();
+                }else{
+                    secTemp--;
+                    msecTemp += 1000;
+                    obj.msec = msecTemp - timeBegin.getMilliseconds();
+                }
+                if(secTemp >= timeBegin.getSeconds()){
+                    obj.sec = secTemp - timeBegin.getSeconds();
+                }else{
+                    minTemp--;
+                    secTemp += 60;
+                    obj.sec = secTemp - timeBegin.getSeconds();
+                }
+                if(minTemp >= timeBegin.getMinutes()){
+                    obj.min = minTemp - timeBegin.getMinutes();
+                }
+                document.getElementById("msec").innerHTML = obj.msec;
+                document.getElementById("sec").innerHTML = obj.sec;
+                document.getElementById("min").innerHTML = obj.min;
+            };
+            function getColor(arrForGenerateColors){
+                var  randColor= "#";
+                for(var i = 0; i < 6; i++){
+                    randColor += arrForGenerateColors[Math.floor(Math.random() * arrForGenerateColors.length)];
+                };    
+                return randColor; 
+            };
+            function setColors(arrForGenerateColors){
+                var arrColors = [];       
+                var idxs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+                while(idxs.length > 0){
+                    var color = getColor(arrForGenerateColors);
+                    for(var i = 0; i < 2; i++){
+                    var id = Math.floor(Math.random()*idxs.length);
+                    arrColors[idxs[id]] = color;
+                    idxs.splice(id, 1);
+                    };        
+                };
+                return arrColors; 
+            };
+            var arr_colors = setColors(charsForColor);
+            var temp_val = [];
+            var temp_ids = [];
+            var colors_match = 0;
+            function newGame(){
+                document.getElementById("timer").style.display = 'block';
+                document.getElementById("btn_sub").style.display = 'none';
+                var timeBegin = new Date();
+                interval = setInterval(counterTime, 1, timeBegin, time);
+                colors_match = 0;
+                var output = "";
+                for(var i = 0; i < arr_colors.length; i++){
+                    output += '<div id="color_' + i + '" onclick="flipColor(this,\'' + arr_colors[i] + '\')"><span style="display:none;" id="' + arr_colors[i] + '"></span></div>';
+                };
+                document.getElementById("game_board").innerHTML = output;
+            };
+            function flipColor(elem, color){                
+                if(elem.style.backgroundColor == "" && temp_val.length < 2){
+                    elem.style.backgroundColor = elem.firstChild.id;
+                    if(temp_val.length == 0){
+                        temp_val.push(color);
+                        temp_ids.push(elem.id);
+                    }else if(temp_val.length == 1){
+                        temp_val.push(color);
+                        temp_ids.push(elem.id);
+                        if(temp_val[0] == temp_val[1]){
+                            colors_match += 2;
+                            temp_val = [];
+                            temp_ids = [];
+                            if(colors_match == arr_colors.length){
+                                clearInterval(interval);                                
+                                timeOfGame = time.min + ':' + time.sec + '.' + time.msec;
+                                alert("Вы выиграли \nЗатраченное время: \n" + timeOfGame);
+                                document.getElementById('game_board').innerHTML = "";
+                                document.getElementById("btn_sub").style.display = 'block';
+                                document.getElementById("timer").style.display = 'none';
+                            }
+                        }else{
+                            function changeColorToBack(){
+                                var color1 = document.getElementById(temp_ids[0]);
+                                var color2 = document.getElementById(temp_ids[1]);
+                                color1.style.backgroundColor = "";
+                                color2.style.backgroundColor = "";
+                                temp_val = [];
+                                temp_ids = [];
+                            };
+                            setTimeout(changeColorToBack, 800);
+                        }
+                    }
+                }
+            };
+        </script>
+    </head>
+    <body>
+        <header class="container"><h2>Задание № 3</h2></header>
+        <div class="container" id="game_board"></div>
+        <div class="row pad">
+                <button type="submit" name="btn_sub" id="btn_sub" value="submit" class="btn btn-primary" onclick="newGame()">Старт</button>
+        </div>
+        <div class="row pad">
+            <div id="timer" style="display:none;">
+                <p class="timer"><span id="min"></span>:<span id="sec"></span>.<span id="msec"></span></p>
+                <button type="submit" name="btn_refresh" id="btn_refresh" value="submit" class="btn btn-danger" onclick="window.location.reload();">X</button>
+            </div>
+        </div>
+        <footer class="container">
+            <div><span>&copy; 2019</span></div>
+            <noscript>
+                <p>Для корректной работы данной страницы включите поддержку скриптов.</p>
+            </noscript>                
+        </footer>
+    </body>
+</html>
